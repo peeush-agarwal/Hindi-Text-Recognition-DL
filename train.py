@@ -33,6 +33,7 @@ parser.add_argument('--random_sample', default=True, action='store_true', help='
 parser.add_argument('--teaching_forcing_prob', type=float, default=0.5, help='where to use teach forcing')
 parser.add_argument('--max_width', type=int, default=71, help='the width of the feature map out from cnn')
 parser.add_argument('--cuda', action='store_true', help='use CUDA device')
+parser.add_argument('--save_interval', type=int, default=10, help='save model at this interval')
 cfg = parser.parse_args()
 print(cfg)
 
@@ -104,9 +105,12 @@ def train(image, text, encoder, decoder, criterion, train_loader, teach_forcing_
                 loss_avg.reset()
 
         # save checkpoint
-        torch.save(encoder.state_dict(), '{0}/encoder_{1}.pth'.format(cfg.model, epoch))
-        torch.save(decoder.state_dict(), '{0}/decoder_{1}.pth'.format(cfg.model, epoch))
+        if epoch % cfg.save_interval == 0:
+            torch.save(encoder.state_dict(), '{0}/encoder_{1}.pth'.format(cfg.model, epoch))
+            torch.save(decoder.state_dict(), '{0}/decoder_{1}.pth'.format(cfg.model, epoch))
 
+    torch.save(encoder.state_dict(), '{0}/encoder_final.pth'.format(cfg.model))
+    torch.save(decoder.state_dict(), '{0}/decoder_final.pth'.format(cfg.model))
 
 def evaluate(image, text, encoder, decoder, data_loader, max_eval_iter=100):
     device = torch.device('cuda:0' if cfg.cuda else 'cpu')
